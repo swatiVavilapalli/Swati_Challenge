@@ -1,0 +1,67 @@
+--- # playbook for deploying website using Ansible and AWS
+- hosts: localhost
+  gather_facts: no
+  vars_files:
+    - /home/ansible/env_vars.yml
+    - keys.yml
+  tasks:
+    - name: Creating AWS SSH keypair using ansible keys
+      ec2_key:
+        aws_access_key: "{{ AWS_ACCESS_KEY_ID}}"
+        aws_secret_key: "{{ AWS_SECRET_ACCESS_KEY}"
+        ec2_region: "{{ AWS_REGION}}"
+        name: ansible-keypair
+        key_material: "{{ lookup('file', '/home/ansible/.ssh/id_rsa.pub')}}"
+        
+    - name: provistion instances
+      ec2:
+        aws_access_key: "{{ AWS_ACCESS_KEY_ID}}"
+        aws_secret_key: "{{ AWS_SECRET_ACCESS_KEY}"
+        ec2_region: "{{ AWS_REGION}}"
+        instance_type: t2.micro
+        group: "{{SEC_GROUP_NAME}}"
+        keypair: ansible_keypair
+        image: "{{AMI_ID}}"
+        assign_public_id: yes
+        vpc_subnet_id: "{{DEFAULT_VPC_SUBNET}}"
+        wait: yes
+        instance_tags:
+          type: web
+        count: 1
+        register: ec2
+    
+    - name: Add host to inventory
+      add_host:
+        host_name: "{{item.public_ip}}"
+        group_name: webservers
+        ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
+        ansible_ssh_private_key_file: /home/ansible/.ssh/id_rsa
+        loop: "{{ ec2.instances}}"
+        
+    - name: create S3 bucket
+      aws_s3:
+        aws_access_key: "{{ AWS_ACCESS_KEY_ID}}"
+        aws_secret_key: "{{ AWS_SECRET_ACCESS_KEY}"
+        ec2_region: "{{ AWS_REGION}}"
+        bucket: "{{BUCKET_NAME}}"
+        mode: create
+        permission: public-read
+      
+    - name: add file to the bucket
+      aws_s3:
+        aws_access_key: "{{ AWS_ACCESS_KEY_ID}}"
+        aws_secret_key: "{{ AWS_SECRET_ACCESS_KEY}"
+        ec2_region: "{{ AWS_REGION}}"
+        bucket: "{{BUCKET_NAME}}"
+        mode: put
+        object: /webimage.png
+        src: /home/ansible/webimage.png
+        permission: public-read
+        
+- hosts: webserves
+  gather_facts: no
+  vars_files:
+    - env_vars.yml
+  remote_user: ec2
+      
+       

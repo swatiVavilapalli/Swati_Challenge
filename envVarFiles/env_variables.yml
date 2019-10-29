@@ -1,0 +1,5 @@
+---
+  AWS_ACCESS_KEY_ID:
+  AWS_SECRET_ACCESS_KEY: 
+  AWS_REGION: us-east-2a
+  aws_ec2_disk_device_name: /dev/sda1

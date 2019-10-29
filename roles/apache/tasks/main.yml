@@ -1,0 +1,35 @@
+---
+  - name: Generate a Self Signed OpenSSL certificate
+    openssl_certificate:
+      path: /etc/ssl/crt/webserver.crt
+      privatekey_path: /etc/ssl/private/webserver.pem
+      csr_path: /etc/ssl/csr/webserver.csr
+      provider: selfsigned
+
+  # Include variables and define needed variables.
+  - name: Include OS-specific variables.
+    include_vars: redHatDetails.yml
+
+  - name: Define apache_packages.
+    set_fact:
+      apache_packages: "{{ __apache_packages | list }}"
+    when: apache_packages is not defined
+
+  # Setup/install tasks.
+  - include_tasks: setupRedHat.yml
+
+  # Configure Apache.
+  - name: Configure Apache.
+    include_tasks: configureRedHat.yml
+
+  - name: Ensure Apache has selected state and enabled on boot.
+    service:
+      name: "{{ apache_service }}"
+      state: "{{ apache_state }}"
+      enabled: true
+
+  - name: Test static website
+    yum: name=wget state=latest
+    notify:
+      - test website
+      - display test results

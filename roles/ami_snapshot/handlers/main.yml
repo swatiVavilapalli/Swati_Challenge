@@ -1,0 +1,6 @@
+---
+  - name: Display-Website-Snapshot-Results
+    debug: var=snapshot_results
+
+  - name: Display-AMI-Creation-Results
+    debug: var=ami_results

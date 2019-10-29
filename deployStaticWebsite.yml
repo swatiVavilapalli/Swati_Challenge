@@ -1,0 +1,29 @@
+---
+  - hosts: localhost
+    connection: local
+    remote_user: iam-test-user
+    become: yes
+    gather_facts: yes
+    vars_files:
+      - files/env_variables.yml
+    roles:
+      - aws_ec2
+
+  - hosts: aws
+    connection: ssh
+    remote_user: ec2-user
+    become: yes
+    gather_facts: yes
+    roles:
+      - apache
+
+  - hosts: localhost
+    connection: local
+    remote_user: iam-test-user
+    become: yes
+    gather_facts: yes
+    vars_files:
+      - files/env_variables.yml
+    roles:
+      - ami_snapshot
+

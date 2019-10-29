@@ -1,0 +1,9 @@
+---
+  AWS_REGION: us-east-2
+  AWS_VPC_ID: vpc-ccb341a7
+  SEC_GRP_NAME: launch-wizard-1
+  EC2_INSTANCE_TYPE: t2.micro
+  IMAGE_ID: 
+  AWS_EC2_DISK_DEVICE_NAME: /dev/sda1
+  AWS_VPC_SUBNET_ID: subnet-196a7071
+  EC2_COUNT: 1
